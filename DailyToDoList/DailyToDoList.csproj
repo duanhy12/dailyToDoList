@@ -8,5 +8,13 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>DailyToDoList</AssemblyName>
     <RootNamespace>DailyToDoList</RootNamespace>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <UseAppHost>true</UseAppHost>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 </Project>
