@@ -37,7 +37,6 @@
 
         <Border x:Name="WindowCard"
                 Margin="6"
-                Background="#F0111827"
                 CornerRadius="26"
                 BorderBrush="#33E2E8F0"
                 BorderThickness="1"
