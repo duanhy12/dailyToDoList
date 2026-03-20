@@ -24,6 +24,10 @@ That script will produce:
 
 - `dist\win-x64\DailyToDoList.exe`
 
+It will also keep the command window open on errors and write a publish log to:
+
+- `dist\win-x64\publish.log`
+
 After publishing, you can launch the app by double-clicking:
 
 - `scripts\run-published.bat`
@@ -33,7 +37,8 @@ After publishing, you can launch the app by double-clicking:
 1. Install the **.NET 8 SDK**.
 2. Double-click `scripts\publish-win-x64.bat`.
 3. Wait for publish to finish.
-4. Open `dist\win-x64\DailyToDoList.exe` directly, or double-click `scripts\run-published.bat`.
+4. If the publisher reports an error, read the same window or open `dist\win-x64\publish.log`.
+5. Open `dist\win-x64\DailyToDoList.exe` directly, or double-click `scripts\run-published.bat`.
 
 ## Project structure
 
