@@ -8,19 +8,15 @@
         Title="Daily To Do List"
         Width="420"
         Height="760"
-        MinWidth="260"
-        MinHeight="180"
+        MinWidth="280"
+        MinHeight="220"
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
         Background="Transparent"
         ShowInTaskbar="True"
         Topmost="True">
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    </Window.Resources>
-
-    <Grid Background="Transparent">
+    <Grid x:Name="RootGrid" Background="Transparent">
         <Thumb x:Name="ResizeThumb"
                Width="10"
                HorizontalAlignment="Left"
@@ -31,106 +27,77 @@
                Height="18"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
-               Margin="6"
+               Margin="8"
                Cursor="SizeNWSE"
                DragDelta="CornerResizeThumb_OnDragDelta" />
 
         <Border x:Name="WindowCard"
-                Margin="6"
-                CornerRadius="26"
-                BorderBrush="#33E2E8F0"
+                Margin="8"
+                CornerRadius="18"
+                BorderBrush="#40A9895A"
                 BorderThickness="1"
                 Effect="{StaticResource PanelShadow}">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#F0162235" Offset="0"/>
-                    <GradientStop Color="#EE0F172A" Offset="1"/>
+                    <GradientStop Color="{StaticResource PaperLightColor}" Offset="0"/>
+                    <GradientStop Color="{StaticResource PaperMidColor}" Offset="0.65"/>
+                    <GradientStop Color="{StaticResource PaperShadowColor}" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
 
             <Grid>
-                <Grid x:Name="ExpandedPanel" Margin="18">
+                <Grid x:Name="ExpandedPanel" Margin="22">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0"
-                            Background="#14FFFFFF"
-                            CornerRadius="20"
-                            Padding="16"
-                            Margin="0,0,0,14">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Today’s focus"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="12"
-                                           FontWeight="SemiBold"/>
-                                <TextBlock Text="My Tasks"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontSize="30"
-                                           FontWeight="Bold"/>
-                                <TextBlock Text="Stay on track with a docked planner that gets out of your way."
-                                           TextWrapping="Wrap"
-                                           Margin="0,6,0,0"
-                                           Foreground="{StaticResource TextSecondaryBrush}"/>
-                            </StackPanel>
+                    <TextBlock Grid.Row="0"
+                               Text="TO DO LIST"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,18"
+                               FontSize="30"
+                               FontFamily="Georgia"
+                               Foreground="{StaticResource InkBrush}"
+                               FontWeight="SemiBold"/>
 
-                            <Border Grid.Column="1"
-                                    Width="46"
-                                    Height="46"
-                                    Margin="12,0,0,0"
-                                    CornerRadius="16"
-                                    Background="{StaticResource AccentSoftBrush}">
-                                <TextBlock Text="✓"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           FontSize="24"
-                                           Foreground="{StaticResource AccentBrush}"/>
-                            </Border>
-                        </Grid>
-                    </Border>
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="1"
-                            Background="#1AFFFFFF"
-                            CornerRadius="20"
-                            Padding="12"
-                            Margin="0,0,0,14">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0"
+                                  Margin="0,0,10,0"
+                                  IsHitTestVisible="False"
+                                  Style="{StaticResource TaskCheckBoxStyle}"/>
 
+                        <Border Grid.Column="1"
+                                BorderBrush="{StaticResource LineBrush}"
+                                BorderThickness="0,0,0,1"
+                                VerticalAlignment="Center"
+                                Margin="0,0,12,0">
                             <TextBox x:Name="TaskInput"
                                      Text="{Binding NewTaskTitle, UpdateSourceTrigger=PropertyChanged}"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     FontSize="16"
-                                     Foreground="{StaticResource TextPrimaryBrush}"
-                                     VerticalContentAlignment="Center"
+                                     Style="{StaticResource LineTextBoxStyle}"
                                      KeyDown="TaskInput_OnKeyDown"
                                      ToolTip="Type a task and press Enter"/>
+                        </Border>
 
-                            <Button Grid.Column="1"
-                                    Width="44"
-                                    Height="44"
-                                    Margin="10,0,0,0"
-                                    Click="AddTaskButton_OnClick"
-                                    Style="{StaticResource GhostButtonStyle}"
-                                    Background="{StaticResource AccentBrush}">
-                                <TextBlock Text="+"
-                                           FontSize="20"
-                                           FontWeight="Bold"/>
-                            </Button>
-                        </Grid>
-                    </Border>
+                        <Button Grid.Column="2"
+                                Width="42"
+                                Height="42"
+                                Click="AddTaskButton_OnClick"
+                                Style="{StaticResource RoundIconButtonStyle}">
+                            <TextBlock Text="+"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                        </Button>
+                    </Grid>
 
                     <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
@@ -138,185 +105,316 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Border Grid.Row="0"
-                                Background="#14FFFFFF"
-                                CornerRadius="22"
-                                Padding="10">
-                            <ListBox x:Name="ActiveTasksList"
+                        <ListBox x:Name="ActiveTasksList"
+                                     Grid.Row="0"
                                      ItemsSource="{Binding ActiveTasks}"
                                      Background="Transparent"
                                      BorderThickness="0"
-                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
                                      AllowDrop="True"
+                                     ItemContainerStyle="{StaticResource TaskListItemStyle}"
                                      PreviewMouseLeftButtonDown="ActiveTasksList_OnPreviewMouseLeftButtonDown"
                                      PreviewMouseMove="ActiveTasksList_OnPreviewMouseMove"
+                                     DragOver="ActiveTasksList_OnDragOver"
+                                     GiveFeedback="ActiveTasksList_OnGiveFeedback"
                                      Drop="ActiveTasksList_OnDrop">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:TaskItem}">
-                                        <Border Margin="0,0,0,10"
-                                                Padding="14"
-                                                Background="#1BFFFFFF"
-                                                CornerRadius="18"
-                                                BorderBrush="#1FFFFFFF"
-                                                BorderThickness="1">
+                                        <Border Margin="0,0,0,8"
+                                                Padding="2,4,2,6"
+                                                Background="Transparent">
+                                            <Border.RenderTransform>
+                                                <TranslateTransform />
+                                            </Border.RenderTransform>
+                                            <Border.Triggers>
+                                                <EventTrigger RoutedEvent="MouseEnter">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                                             To="6"
+                                                                             Duration="0:0:0.16"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="0.92"
+                                                                             Duration="0:0:0.16"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                                <EventTrigger RoutedEvent="MouseLeave">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                                             To="0"
+                                                                             Duration="0:0:0.16"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="1"
+                                                                             Duration="0:0:0.16"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Border.Triggers>
+
                                             <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <CheckBox Grid.Column="0"
+                                                <CheckBox Grid.Row="0"
+                                                          Grid.Column="0"
+                                                          Margin="0,0,10,0"
+                                                          VerticalAlignment="Center"
                                                           IsChecked="{Binding IsCompleted, Mode=OneWay}"
                                                           Click="TaskCheckBox_OnClick"
-                                                          Style="{StaticResource TaskCheckBoxStyle}"
-                                                          Margin="0,0,12,0"
-                                                          VerticalAlignment="Top"/>
+                                                          Style="{StaticResource TaskCheckBoxStyle}"/>
 
-                                                <TextBox Grid.Column="1"
+                                                <TextBox Grid.Row="0"
+                                                         Grid.Column="1"
                                                          Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                                         Background="Transparent"
-                                                         BorderThickness="0"
+                                                         Style="{StaticResource LineTextBoxStyle}"
                                                          TextWrapping="Wrap"
-                                                         Foreground="{StaticResource TextPrimaryBrush}"
-                                                         FontSize="15"
-                                                         VerticalAlignment="Center"/>
+                                                         Margin="0,0,8,0"/>
 
-                                                <StackPanel Grid.Column="2"
+                                                <StackPanel Grid.Row="0"
+                                                            Grid.Column="2"
                                                             Orientation="Horizontal"
-                                                            VerticalAlignment="Center"
-                                                            Margin="10,0,0,0">
-                                                    <TextBlock Text="↕"
-                                                               FontSize="16"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,0,10,0"/>
+                                                            VerticalAlignment="Center">
+                                                    <TextBlock Text="⋮⋮"
+                                                               Margin="0,0,10,0"
+                                                               FontSize="15"
+                                                               Foreground="{StaticResource InkSoftBrush}"
+                                                               Cursor="SizeAll"/>
                                                     <Button Content="✕"
                                                             Tag="{Binding}"
                                                             Click="DeleteTaskButton_OnClick"
-                                                            Style="{StaticResource GhostButtonStyle}"
-                                                            Padding="8,4"
-                                                            FontSize="11"/>
+                                                            Style="{StaticResource InkGhostButtonStyle}"
+                                                            FontSize="12"/>
                                                 </StackPanel>
+
+                                                <Border Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Grid.ColumnSpan="2"
+                                                        Height="1"
+                                                        Margin="0,3,0,0"
+                                                        Background="{StaticResource LineBrush}"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                        </Border>
 
-                        <Expander Grid.Row="1"
-                                  Margin="0,14,0,0"
-                                  IsExpanded="{Binding ShowCompletedTasks}"
-                                  Expanded="CompletedTasksExpander_OnChanged"
-                                  Collapsed="CompletedTasksExpander_OnChanged"
-                                  Background="#14FFFFFF"
-                                  Foreground="{StaticResource TextPrimaryBrush}">
-                            <Expander.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Completed"
-                                               FontWeight="SemiBold"/>
-                                    <Border Background="{StaticResource AccentSoftBrush}"
-                                            CornerRadius="10"
-                                            Margin="8,0,0,0"
-                                            Padding="8,2">
-                                        <TextBlock Text="{Binding CompletedCount}"
-                                                   Foreground="{StaticResource AccentBrush}"
-                                                   FontWeight="SemiBold"/>
-                                    </Border>
-                                </StackPanel>
-                            </Expander.Header>
-                            <Border Padding="8" Margin="0,8,0,0">
-                                <ListBox ItemsSource="{Binding CompletedTasks}"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                         MaxHeight="240">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate DataType="{x:Type models:TaskItem}">
-                                            <Border Margin="0,0,0,8"
-                                                    Padding="12"
-                                                    Background="#12000000"
-                                                    CornerRadius="16">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <CheckBox Grid.Column="0"
-                                                              IsChecked="{Binding IsCompleted, Mode=OneWay}"
-                                                              Click="TaskCheckBox_OnClick"
-                                                              Margin="0,0,12,0"/>
-                                                    <StackPanel Grid.Column="1">
-                                                        <TextBlock Text="{Binding Title}"
-                                                                   TextWrapping="Wrap"
-                                                                   Foreground="#FFCBD5E1"
-                                                                   TextDecorations="Strikethrough"/>
-                                                        <TextBlock Text="{Binding CompletedAt, StringFormat='Done {0:g}'}"
-                                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                                   FontSize="11"
-                                                                   Margin="0,4,0,0"/>
-                                                    </StackPanel>
-                                                    <Button Grid.Column="2"
-                                                            Content="✕"
-                                                            Tag="{Binding}"
-                                                            Click="DeleteTaskButton_OnClick"
-                                                            Style="{StaticResource GhostButtonStyle}"
-                                                            Padding="8,4"
-                                                            FontSize="11"/>
-                                                </Grid>
+                        <Border Grid.Row="1"
+                                Margin="0,14,0,0"
+                                Background="#18FFFFFF"
+                                BorderBrush="#30A9895A"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="10,8">
+                            <DockPanel>
+                                <Expander x:Name="CompletedExpander"
+                                          IsExpanded="{Binding ShowCompletedTasks}"
+                                          Expanded="CompletedTasksExpander_OnChanged"
+                                          Collapsed="CompletedTasksExpander_OnChanged"
+                                          Background="Transparent"
+                                          Foreground="{StaticResource InkBrush}"
+                                          DockPanel.Dock="Left">
+                                    <Expander.Header>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Completed"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource InkBrush}"/>
+                                            <Border Background="#35B88355"
+                                                    CornerRadius="10"
+                                                    Margin="8,0,0,0"
+                                                    Padding="8,2">
+                                                <TextBlock Text="{Binding CompletedCount}"
+                                                           Foreground="{StaticResource InkBrush}"
+                                                           FontWeight="SemiBold"/>
                                             </Border>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </Border>
-                        </Expander>
+                                        </StackPanel>
+                                    </Expander.Header>
+                                    <Border Padding="4,10,0,0">
+                                        <ListBox ItemsSource="{Binding CompletedTasks}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 ItemContainerStyle="{StaticResource TaskListItemStyle}"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                 MaxHeight="220">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type models:TaskItem}">
+                                                    <Grid Margin="0,0,0,8">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <CheckBox Grid.Column="0"
+                                                                  Margin="0,0,10,0"
+                                                                  IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                                                                  Click="TaskCheckBox_OnClick"
+                                                                  Style="{StaticResource TaskCheckBoxStyle}"/>
+
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="{Binding Title}"
+                                                                       Foreground="{StaticResource InkSoftBrush}"
+                                                                       TextWrapping="Wrap"
+                                                                       TextDecorations="Strikethrough"/>
+                                                            <TextBlock Text="{Binding CompletedAt, StringFormat='Done {0:g}'}"
+                                                                       Foreground="{StaticResource InkSoftBrush}"
+                                                                       FontSize="11"
+                                                                       Margin="0,2,0,0"/>
+                                                        </StackPanel>
+
+                                                        <Button Grid.Column="2"
+                                                                Content="✕"
+                                                                Tag="{Binding}"
+                                                                Click="DeleteTaskButton_OnClick"
+                                                                Style="{StaticResource InkGhostButtonStyle}"
+                                                                FontSize="12"/>
+
+                                                        <Border Grid.Row="1"
+                                                                Grid.Column="1"
+                                                                Grid.ColumnSpan="2"
+                                                                Height="1"
+                                                                Margin="0,5,0,0"
+                                                                Background="{StaticResource LineBrush}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Border>
+                                </Expander>
+
+                                <StackPanel DockPanel.Dock="Right"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button x:Name="HelpButton"
+                                            Width="30"
+                                            Height="30"
+                                            Margin="12,0,0,0"
+                                            Click="HelpButton_OnClick"
+                                            Style="{StaticResource RoundIconButtonStyle}"
+                                            Background="#AA9E6F47">
+                                        <TextBlock Text="?"
+                                                   FontWeight="Bold"
+                                                   FontSize="15"/>
+                                    </Button>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
                     </Grid>
 
-                    <Border Grid.Row="3"
-                            Background="#12000000"
-                            CornerRadius="16"
-                            Padding="12"
-                            Margin="0,14,0,0">
-                        <TextBlock Text="Tip: drag active tasks to reorder them. Move the mouse away and the panel slides back into a compact tab."
-                                   TextWrapping="Wrap"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="12"/>
-                    </Border>
                 </Grid>
 
-                <Grid x:Name="CollapsedPanel" Visibility="Collapsed" Margin="10">
-                    <Border Width="74"
-                            Height="158"
-                            Background="#F01E293B"
-                            CornerRadius="24"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            BorderBrush="#44E2E8F0"
-                            BorderThickness="1">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="☰"
+                <Grid x:Name="CollapsedPanel"
+                      Visibility="Collapsed"
+                      Background="Transparent"
+                      MouseEnter="CollapsedPanel_OnMouseEnter"
+                      MouseLeave="CollapsedPanel_OnMouseLeave"
+                      MouseLeftButtonDown="CollapsedPanel_OnMouseLeftButtonDown"
+                      MouseMove="CollapsedPanel_OnMouseMove"
+                      MouseLeftButtonUp="CollapsedPanel_OnMouseLeftButtonUp">
+                    <Border HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            CornerRadius="18"
+                            BorderBrush="#40A9895A"
+                            BorderThickness="1"
+                            Effect="{StaticResource PanelShadow}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FFF5ECCE" Offset="0"/>
+                                <GradientStop Color="#FFE4D3A0" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="≡"
+                                       Grid.Row="0"
                                        HorizontalAlignment="Center"
-                                       FontSize="22"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Tasks"
-                                       Margin="0,10,0,0"
-                                       HorizontalAlignment="Center"
-                                       FontSize="13"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <Border Background="{StaticResource AccentSoftBrush}"
+                                       Foreground="{StaticResource InkBrush}"
+                                       FontSize="20"/>
+
+                            <StackPanel Grid.Row="1" Margin="0,4,0,0">
+                                <Border Height="1" Margin="8,4,8,0" Background="{StaticResource LineBrush}"/>
+                                <Border Height="1" Margin="8,8,8,0" Background="{StaticResource LineBrush}"/>
+                                <Border Height="1" Margin="8,8,8,0" Background="{StaticResource LineBrush}"/>
+                            </StackPanel>
+
+                            <Border Grid.Row="2"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,8,0,0"
+                                    Background="#35B88355"
                                     CornerRadius="12"
-                                    Padding="10,4"
-                                    Margin="0,10,0,0">
+                                    Padding="8,3">
                                 <TextBlock Text="{Binding ActiveCount}"
-                                           Foreground="{StaticResource AccentBrush}"
-                                           HorizontalAlignment="Center"/>
+                                           Foreground="{StaticResource InkBrush}"
+                                           FontWeight="Bold"/>
                             </Border>
-                        </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
             </Grid>
         </Border>
+
+        <Popup x:Name="HelpPopup"
+               PlacementTarget="{Binding ElementName=HelpButton}"
+               Placement="Top"
+               StaysOpen="False"
+               AllowsTransparency="True">
+            <Border Background="#FDF1D7"
+                    BorderBrush="#C6A979"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="14"
+                    Width="250"
+                    Effect="{StaticResource PanelShadow}">
+                <StackPanel>
+                    <TextBlock Text="How to use"
+                               Foreground="{StaticResource InkBrush}"
+                               FontWeight="Bold"
+                               FontSize="16"/>
+                    <TextBlock Margin="0,10,0,0"
+                               Foreground="{StaticResource InkBrush}"
+                               TextWrapping="Wrap"
+                               Text="• Type a task and press Enter or +.&#10;• Tick a box to archive it below.&#10;• Drag a task row to reorder active items.&#10;• Hover away to collapse the note.&#10;• Hover the mini note to open it again."/>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="DragGhostPopup"
+               Placement="Relative"
+               PlacementTarget="{Binding ElementName=RootGrid}"
+               IsHitTestVisible="False"
+               AllowsTransparency="True">
+            <Border Background="#F8E9C5"
+                    BorderBrush="#C6A979"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="10,6"
+                    Opacity="0.95"
+                    Effect="{StaticResource PanelShadow}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="☰"
+                               Margin="0,0,8,0"
+                               Foreground="{StaticResource InkSoftBrush}"/>
+                    <TextBlock x:Name="DragGhostText"
+                               Foreground="{StaticResource InkBrush}"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+        </Popup>
     </Grid>
 </Window>

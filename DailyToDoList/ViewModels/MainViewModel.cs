@@ -193,6 +193,30 @@ public class MainViewModel : INotifyPropertyChanged
         await PersistAsync();
     }
 
+    public async Task MoveTaskToEndAsync(TaskItem draggedItem)
+    {
+        if (draggedItem.IsCompleted)
+        {
+            return;
+        }
+
+        var activeTasks = Tasks
+            .Where(task => !task.IsCompleted)
+            .OrderBy(task => task.DisplayOrder)
+            .Where(task => task != draggedItem)
+            .ToList();
+
+        activeTasks.Add(draggedItem);
+
+        for (var index = 0; index < activeTasks.Count; index++)
+        {
+            activeTasks[index].DisplayOrder = index;
+        }
+
+        RefreshViews();
+        await PersistAsync();
+    }
+
     public async Task PersistAsync()
     {
         await _storageService.SaveAsync(Tasks.OrderBy(task => task.IsCompleted).ThenBy(task => task.DisplayOrder));
