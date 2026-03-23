@@ -40,20 +40,30 @@
                 <Thumb x:Name="ResizeThumb"
                        Width="8"
                        HorizontalAlignment="Left"
-                       Background="Transparent"
                        Cursor="SizeWE"
                        DragDelta="ResizeThumb_OnDragDelta"
-                       Panel.ZIndex="6" />
+                       Panel.ZIndex="6">
+                    <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                            <Border Background="Transparent"/>
+                        </ControlTemplate>
+                    </Thumb.Template>
+                </Thumb>
                 <Thumb x:Name="CornerResizeThumb"
                        Width="14"
                        Height="14"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Top"
                        Margin="2"
-                       Background="Transparent"
                        Cursor="SizeNWSE"
                        DragDelta="CornerResizeThumb_OnDragDelta"
-                       Panel.ZIndex="6" />
+                       Panel.ZIndex="6">
+                    <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                            <Border Background="Transparent"/>
+                        </ControlTemplate>
+                    </Thumb.Template>
+                </Thumb>
                 <Grid x:Name="ExpandedPanel" Margin="22">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
