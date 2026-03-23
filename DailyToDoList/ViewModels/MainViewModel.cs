@@ -193,6 +193,48 @@ public class MainViewModel : INotifyPropertyChanged
         await PersistAsync();
     }
 
+    public bool MoveTaskToIndex(TaskItem draggedItem, int targetIndex)
+    {
+        if (draggedItem.IsCompleted)
+        {
+            return false;
+        }
+
+        var activeTasks = Tasks
+            .Where(task => !task.IsCompleted)
+            .OrderBy(task => task.DisplayOrder)
+            .ToList();
+
+        var fromIndex = activeTasks.IndexOf(draggedItem);
+        if (fromIndex < 0)
+        {
+            return false;
+        }
+
+        targetIndex = Math.Clamp(targetIndex, 0, activeTasks.Count);
+        if (fromIndex == targetIndex || fromIndex + 1 == targetIndex)
+        {
+            return false;
+        }
+
+        activeTasks.RemoveAt(fromIndex);
+        if (fromIndex < targetIndex)
+        {
+            targetIndex--;
+        }
+
+        targetIndex = Math.Clamp(targetIndex, 0, activeTasks.Count);
+        activeTasks.Insert(targetIndex, draggedItem);
+
+        for (var index = 0; index < activeTasks.Count; index++)
+        {
+            activeTasks[index].DisplayOrder = index;
+        }
+
+        RefreshViews();
+        return true;
+    }
+
     public async Task MoveTaskToEndAsync(TaskItem draggedItem)
     {
         if (draggedItem.IsCompleted)

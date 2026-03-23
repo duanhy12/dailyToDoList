@@ -33,10 +33,13 @@ public partial class MainWindow : Window
 
     private readonly MainViewModel _viewModel;
     private readonly DispatcherTimer _collapseTimer;
+    private readonly Dictionary<Guid, double> _taskTopCache = new();
     private TaskItem? _draggedTask;
     private ListBoxItem? _draggedTaskContainer;
     private Point _dragStartPoint;
     private bool _isCollapsed;
+    private bool _isDraggingTask;
+    private bool _isTaskPointerDown;
     private bool _isDraggingCollapsed;
     private bool _collapsedPositionLocked;
     private bool _collapsedDragMoved;
@@ -48,6 +51,7 @@ public partial class MainWindow : Window
     private Point _collapsedMouseDownPoint;
     private Point _collapsedMouseDownScreenPoint;
     private Point _collapsedWindowStartPoint;
+    private int _currentTaskInsertionIndex = -1;
 
     public MainWindow()
     {
@@ -60,8 +64,11 @@ public partial class MainWindow : Window
 
         Loaded += OnLoaded;
         MouseLeave += OnWindowMouseLeave;
+        PreviewMouseMove += OnWindowPreviewMouseMove;
+        PreviewMouseLeftButtonUp += OnWindowPreviewMouseLeftButtonUp;
         Deactivated += (_, _) => ScheduleCollapseIfNeeded();
         ExpandedPanel.MouseEnter += (_, _) => _collapseTimer.Stop();
+        ActiveTasksList.LayoutUpdated += ActiveTasksList_OnLayoutUpdated;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -112,7 +119,7 @@ public partial class MainWindow : Window
 
     private void ScheduleCollapseIfNeeded()
     {
-        if (_isCollapsed || _isDraggingCollapsed)
+        if (_isCollapsed || _isDraggingCollapsed || _isDraggingTask || _isTaskPointerDown)
         {
             return;
         }
@@ -124,7 +131,7 @@ public partial class MainWindow : Window
     private void CollapseTimer_OnTick(object? sender, EventArgs e)
     {
         _collapseTimer.Stop();
-        if (_isCollapsed)
+        if (_isCollapsed || _isDraggingTask || _isTaskPointerDown)
         {
             return;
         }
@@ -226,18 +233,35 @@ public partial class MainWindow : Window
 
     private void ActiveTasksList_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        _dragStartPoint = e.GetPosition(null);
+        _dragStartPoint = e.GetPosition(RootGrid);
         _draggedTask = GetTaskFromDependencyObject((DependencyObject)e.OriginalSource);
+        _isTaskPointerDown = _draggedTask is not null;
+        _collapseTimer.Stop();
+    }
+
+    private void ActiveTasksList_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (!_isDraggingTask)
+        {
+            _isTaskPointerDown = false;
+            _draggedTask = null;
+        }
     }
 
     private void ActiveTasksList_OnPreviewMouseMove(object sender, MouseEventArgs e)
     {
+        if (_isDraggingTask)
+        {
+            UpdateTaskDrag();
+            return;
+        }
+
         if (e.LeftButton != MouseButtonState.Pressed || _draggedTask is null)
         {
             return;
         }
 
-        var position = e.GetPosition(null);
+        var position = e.GetPosition(RootGrid);
         if (Math.Abs(position.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
             Math.Abs(position.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
         {
@@ -249,49 +273,84 @@ public partial class MainWindow : Window
 
     private void BeginTaskDrag(TaskItem task)
     {
+        if (_isDraggingTask)
+        {
+            return;
+        }
+
+        _isDraggingTask = true;
+        _isTaskPointerDown = false;
+        _currentTaskInsertionIndex = ActiveTasksList.Items.IndexOf(task);
         _draggedTaskContainer = ActiveTasksList.ItemContainerGenerator.ContainerFromItem(task) as ListBoxItem;
         if (_draggedTaskContainer is not null)
         {
-            _draggedTaskContainer.Opacity = 0.35;
+            _draggedTaskContainer.Opacity = 0.08;
         }
 
         DragGhostText.Text = string.IsNullOrWhiteSpace(task.Title) ? "Task" : task.Title;
         UpdateDragGhostPosition();
         DragGhostPopup.IsOpen = true;
-
-        try
-        {
-            DragDrop.DoDragDrop(ActiveTasksList, task, DragDropEffects.Move);
-        }
-        finally
-        {
-            DragGhostPopup.IsOpen = false;
-            if (_draggedTaskContainer is not null)
-            {
-                _draggedTaskContainer.Opacity = 1;
-                _draggedTaskContainer = null;
-            }
-
-            _draggedTask = null;
-        }
+        Mouse.Capture(RootGrid);
     }
 
-    private void ActiveTasksList_OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
+    private void UpdateTaskDrag()
     {
-        if (DragGhostPopup.IsOpen)
+        if (!_isDraggingTask || _draggedTask is null)
         {
-            UpdateDragGhostPosition();
-            Mouse.SetCursor(Cursors.SizeAll);
-            e.UseDefaultCursors = false;
-            e.Handled = true;
+            return;
         }
-    }
 
-    private void ActiveTasksList_OnDragOver(object sender, DragEventArgs e)
-    {
         UpdateDragGhostPosition();
-        e.Effects = DragDropEffects.Move;
-        e.Handled = true;
+
+        var targetIndex = GetInsertionIndexFromCursor();
+        if (targetIndex >= 0 && targetIndex != _currentTaskInsertionIndex)
+        {
+            if (_viewModel.MoveTaskToIndex(_draggedTask, targetIndex))
+            {
+                _currentTaskInsertionIndex = targetIndex;
+            }
+        }
+    }
+
+    private void EndTaskDrag()
+    {
+        if (!_isDraggingTask)
+        {
+            return;
+        }
+
+        _isDraggingTask = false;
+        _isTaskPointerDown = false;
+        DragGhostPopup.IsOpen = false;
+        if (_draggedTaskContainer is not null)
+        {
+            _draggedTaskContainer.Opacity = 1;
+            _draggedTaskContainer = null;
+        }
+
+        Mouse.Capture(null);
+        _currentTaskInsertionIndex = -1;
+        _ = _viewModel.PersistAsync();
+        _draggedTask = null;
+    }
+
+    private void OnWindowPreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isDraggingTask)
+        {
+            UpdateTaskDrag();
+        }
+    }
+
+    private void OnWindowPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingTask)
+        {
+            EndTaskDrag();
+        }
+
+        _isTaskPointerDown = false;
+        _draggedTask = null;
     }
 
     private void UpdateDragGhostPosition()
@@ -303,31 +362,64 @@ public partial class MainWindow : Window
 
         var screenPoint = GetCursorScreenPosition();
         var localPoint = RootGrid.PointFromScreen(screenPoint);
-        DragGhostPopup.HorizontalOffset = localPoint.X + 16;
-        DragGhostPopup.VerticalOffset = localPoint.Y + 16;
+        DragGhostPopup.HorizontalOffset = localPoint.X + 18;
+        DragGhostPopup.VerticalOffset = localPoint.Y + 12;
     }
 
-    private async void ActiveTasksList_OnDrop(object sender, DragEventArgs e)
+    private int GetInsertionIndexFromCursor()
     {
-        if (!e.Data.GetDataPresent(typeof(TaskItem)))
+        var cursorPoint = ActiveTasksList.PointFromScreen(GetCursorScreenPosition());
+        var items = ActiveTasksList.Items.Cast<TaskItem>().ToList();
+        if (items.Count == 0)
         {
-            return;
+            return 0;
         }
 
-        var dragged = e.Data.GetData(typeof(TaskItem)) as TaskItem;
-        if (dragged is null)
+        for (var index = 0; index < items.Count; index++)
         {
-            return;
+            if (ActiveTasksList.ItemContainerGenerator.ContainerFromItem(items[index]) is not ListBoxItem container)
+            {
+                continue;
+            }
+
+            var topLeft = container.TransformToAncestor(ActiveTasksList).Transform(new Point(0, 0));
+            var midpoint = topLeft.Y + (container.ActualHeight / 2);
+            if (cursorPoint.Y < midpoint)
+            {
+                return index;
+            }
         }
 
-        var target = GetTaskFromDependencyObject((DependencyObject)e.OriginalSource);
-        if (target is not null)
+        return items.Count;
+    }
+
+    private void ActiveTasksList_OnLayoutUpdated(object? sender, EventArgs e)
+    {
+        foreach (var task in ActiveTasksList.Items.Cast<TaskItem>())
         {
-            await _viewModel.MoveTaskAsync(dragged, target);
-        }
-        else
-        {
-            await _viewModel.MoveTaskToEndAsync(dragged);
+            if (ActiveTasksList.ItemContainerGenerator.ContainerFromItem(task) is not ListBoxItem container)
+            {
+                continue;
+            }
+
+            var top = container.TransformToAncestor(ActiveTasksList).Transform(new Point(0, 0)).Y;
+            if (_taskTopCache.TryGetValue(task.Id, out var previousTop) && Math.Abs(previousTop - top) > 0.5)
+            {
+                var transform = container.RenderTransform as TranslateTransform;
+                if (transform is null)
+                {
+                    transform = new TranslateTransform();
+                    container.RenderTransform = transform;
+                }
+
+                transform.Y = previousTop - top;
+                transform.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(170))
+                {
+                    EasingFunction = new QuadraticEase()
+                });
+            }
+
+            _taskTopCache[task.Id] = top;
         }
     }
 

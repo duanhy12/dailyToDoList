@@ -128,13 +128,10 @@
                                      ItemsSource="{Binding ActiveTasks}"
                                      Background="Transparent"
                                      BorderThickness="0"
-                                     AllowDrop="True"
                                      ItemContainerStyle="{StaticResource TaskListItemStyle}"
                                      PreviewMouseLeftButtonDown="ActiveTasksList_OnPreviewMouseLeftButtonDown"
-                                     PreviewMouseMove="ActiveTasksList_OnPreviewMouseMove"
-                                     DragOver="ActiveTasksList_OnDragOver"
-                                     GiveFeedback="ActiveTasksList_OnGiveFeedback"
-                                     Drop="ActiveTasksList_OnDrop">
+                                     PreviewMouseLeftButtonUp="ActiveTasksList_OnPreviewMouseLeftButtonUp"
+                                     PreviewMouseMove="ActiveTasksList_OnPreviewMouseMove">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:TaskItem}">
                                         <Border Margin="0,0,12,8"
@@ -415,21 +412,49 @@
                PlacementTarget="{Binding ElementName=RootGrid}"
                IsHitTestVisible="False"
                AllowsTransparency="True">
-            <Border Background="#F8E9C5"
+            <Border Background="#FCF0D2"
                     BorderBrush="#C6A979"
                     BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="10,6"
-                    Opacity="0.95"
+                    CornerRadius="14"
+                    Padding="12,8"
+                    Width="260"
+                    Opacity="0.96"
                     Effect="{StaticResource PanelShadow}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="☰"
-                               Margin="0,0,8,0"
-                               Foreground="{StaticResource InkSoftBrush}"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <CheckBox Grid.Column="0"
+                              Margin="0,0,10,0"
+                              IsChecked="False"
+                              IsHitTestVisible="False"
+                              Style="{StaticResource TaskCheckBoxStyle}"/>
                     <TextBlock x:Name="DragGhostText"
+                               Grid.Column="1"
+                               VerticalAlignment="Center"
                                Foreground="{StaticResource InkBrush}"
-                               FontWeight="SemiBold"/>
-                </StackPanel>
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Grid.Column="2"
+                               Text="⋮⋮"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource InkSoftBrush}"/>
+                    <Border Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
+                            Height="1"
+                            Margin="0,6,0,0"
+                            Background="{StaticResource LineBrush}"/>
+                </Grid>
             </Border>
         </Popup>
     </Grid>
