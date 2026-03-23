@@ -18,21 +18,23 @@
         Topmost="True">
     <Grid x:Name="RootGrid" Background="Transparent">
         <Thumb x:Name="ResizeThumb"
-               Width="10"
+               Width="6"
                HorizontalAlignment="Left"
+               Background="Transparent"
                Cursor="SizeWE"
                DragDelta="ResizeThumb_OnDragDelta" />
         <Thumb x:Name="CornerResizeThumb"
-               Width="18"
-               Height="18"
+               Width="14"
+               Height="14"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
                Margin="8"
+               Background="Transparent"
                Cursor="SizeNWSE"
                DragDelta="CornerResizeThumb_OnDragDelta" />
 
         <Border x:Name="WindowCard"
-                Margin="8"
+                Margin="4,8,8,8"
                 CornerRadius="18"
                 BorderBrush="#40A9895A"
                 BorderThickness="1"
@@ -119,7 +121,7 @@
                                      Drop="ActiveTasksList_OnDrop">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:TaskItem}">
-                                        <Border Margin="0,0,0,8"
+                                        <Border Margin="0,0,12,8"
                                                 Padding="2,4,2,6"
                                                 Background="Transparent">
                                             <Border.RenderTransform>
@@ -317,8 +319,6 @@
                 <Grid x:Name="CollapsedPanel"
                       Visibility="Collapsed"
                       Background="Transparent"
-                      MouseEnter="CollapsedPanel_OnMouseEnter"
-                      MouseLeave="CollapsedPanel_OnMouseLeave"
                       MouseLeftButtonDown="CollapsedPanel_OnMouseLeftButtonDown"
                       MouseMove="CollapsedPanel_OnMouseMove"
                       MouseLeftButtonUp="CollapsedPanel_OnMouseLeftButtonUp">
@@ -334,7 +334,7 @@
                                 <GradientStop Color="#FFE4D3A0" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
-                        <Grid Margin="10">
+                        <Grid Margin="6">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>

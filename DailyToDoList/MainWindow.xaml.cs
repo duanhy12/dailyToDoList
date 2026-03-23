@@ -15,24 +15,25 @@ public partial class MainWindow : Window
 {
     private const double DefaultExpandedHeightFactor = 0.82;
     private const double MinimumExpandedWidth = 300;
-    private const double CollapsedWidth = 88;
-    private const double CollapsedHeight = 88;
+    private const double CollapsedWidth = 72;
+    private const double CollapsedHeight = 72;
     private const double WindowMargin = 10;
 
     private readonly MainViewModel _viewModel;
     private readonly DispatcherTimer _collapseTimer;
-    private readonly DispatcherTimer _expandTimer;
     private TaskItem? _draggedTask;
     private ListBoxItem? _draggedTaskContainer;
     private Point _dragStartPoint;
     private bool _isCollapsed;
     private bool _isDraggingCollapsed;
     private bool _collapsedPositionLocked;
+    private bool _collapsedDragMoved;
     private double _expandedWidth;
     private double _expandedHeight;
     private double _collapsedLeft;
     private double _collapsedTop;
     private Point _collapsedDragOffset;
+    private Point _collapsedMouseDownPoint;
 
     public MainWindow()
     {
@@ -43,8 +44,6 @@ public partial class MainWindow : Window
         _collapseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(900) };
         _collapseTimer.Tick += CollapseTimer_OnTick;
 
-        _expandTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(280) };
-        _expandTimer.Tick += ExpandTimer_OnTick;
 
         Loaded += OnLoaded;
         MouseLeave += OnWindowMouseLeave;
@@ -125,14 +124,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ExpandTimer_OnTick(object? sender, EventArgs e)
-    {
-        _expandTimer.Stop();
-        if (_isCollapsed && !_isDraggingCollapsed)
-        {
-            ExpandWindow();
-        }
-    }
 
     private void CollapseWindow()
     {
@@ -161,7 +152,6 @@ public partial class MainWindow : Window
     private void ExpandWindow()
     {
         _collapseTimer.Stop();
-        _expandTimer.Stop();
         if (!_isCollapsed)
         {
             return;
@@ -353,20 +343,6 @@ public partial class MainWindow : Window
         HelpPopup.IsOpen = !HelpPopup.IsOpen;
     }
 
-    private void CollapsedPanel_OnMouseEnter(object sender, MouseEventArgs e)
-    {
-        if (_isCollapsed && !_isDraggingCollapsed)
-        {
-            _expandTimer.Stop();
-            _expandTimer.Start();
-        }
-    }
-
-    private void CollapsedPanel_OnMouseLeave(object sender, MouseEventArgs e)
-    {
-        _expandTimer.Stop();
-    }
-
     private void CollapsedPanel_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (!_isCollapsed)
@@ -374,9 +350,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        _expandTimer.Stop();
         _isDraggingCollapsed = true;
         _collapsedPositionLocked = true;
+        _collapsedDragMoved = false;
+        _collapsedMouseDownPoint = e.GetPosition(this);
         var screenPoint = PointToScreen(e.GetPosition(this));
         _collapsedDragOffset = new Point(screenPoint.X - Left, screenPoint.Y - Top);
         CollapsedPanel.CaptureMouse();
@@ -390,6 +367,15 @@ public partial class MainWindow : Window
             return;
         }
 
+        var currentPoint = e.GetPosition(this);
+        if (!_collapsedDragMoved &&
+            Math.Abs(currentPoint.X - _collapsedMouseDownPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(currentPoint.Y - _collapsedMouseDownPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        _collapsedDragMoved = true;
         var workArea = SystemParameters.WorkArea;
         var screenPoint = PointToScreen(e.GetPosition(this));
         _collapsedLeft = Math.Clamp(screenPoint.X - _collapsedDragOffset.X, workArea.Left, workArea.Right - CollapsedWidth);
@@ -405,9 +391,15 @@ public partial class MainWindow : Window
             return;
         }
 
+        var shouldExpand = !_collapsedDragMoved;
         _isDraggingCollapsed = false;
         CollapsedPanel.ReleaseMouseCapture();
         e.Handled = true;
+
+        if (shouldExpand)
+        {
+            ExpandWindow();
+        }
     }
 
     private void ResizeThumb_OnDragDelta(object sender, DragDeltaEventArgs e)
