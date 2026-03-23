@@ -17,28 +17,17 @@
         ShowInTaskbar="True"
         Topmost="True">
     <Grid x:Name="RootGrid" Background="Transparent">
-        <Thumb x:Name="ResizeThumb"
-               Width="6"
-               HorizontalAlignment="Left"
-               Background="Transparent"
-               Cursor="SizeWE"
-               DragDelta="ResizeThumb_OnDragDelta" />
-        <Thumb x:Name="CornerResizeThumb"
-               Width="14"
-               Height="14"
-               HorizontalAlignment="Left"
-               VerticalAlignment="Top"
-               Margin="8"
-               Background="Transparent"
-               Cursor="SizeNWSE"
-               DragDelta="CornerResizeThumb_OnDragDelta" />
 
         <Border x:Name="WindowCard"
-                Margin="4,8,8,8"
+                Margin="0,8,8,8"
                 CornerRadius="18"
                 BorderBrush="#40A9895A"
                 BorderThickness="1"
-                Effect="{StaticResource PanelShadow}">
+                Effect="{StaticResource PanelShadow}"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="WindowCardScaleTransform"/>
+            </Border.RenderTransform>
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                     <GradientStop Color="{StaticResource PaperLightColor}" Offset="0"/>
@@ -47,7 +36,24 @@
                 </LinearGradientBrush>
             </Border.Background>
 
-            <Grid>
+            <Grid ClipToBounds="True">
+                <Thumb x:Name="ResizeThumb"
+                       Width="8"
+                       HorizontalAlignment="Left"
+                       Background="Transparent"
+                       Cursor="SizeWE"
+                       DragDelta="ResizeThumb_OnDragDelta"
+                       Panel.ZIndex="6" />
+                <Thumb x:Name="CornerResizeThumb"
+                       Width="14"
+                       Height="14"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       Margin="2"
+                       Background="Transparent"
+                       Cursor="SizeNWSE"
+                       DragDelta="CornerResizeThumb_OnDragDelta"
+                       Panel.ZIndex="6" />
                 <Grid x:Name="ExpandedPanel" Margin="22">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

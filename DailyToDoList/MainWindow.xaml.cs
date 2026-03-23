@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using System.Runtime.InteropServices;
 using DailyToDoList.Models;
 using DailyToDoList.Services;
 using DailyToDoList.ViewModels;
@@ -13,6 +14,17 @@ namespace DailyToDoList;
 
 public partial class MainWindow : Window
 {
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int X;
+        public int Y;
+    }
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetCursorPos(out NativePoint point);
+
     private const double DefaultExpandedHeightFactor = 0.82;
     private const double MinimumExpandedWidth = 300;
     private const double CollapsedWidth = 72;
@@ -34,6 +46,8 @@ public partial class MainWindow : Window
     private double _collapsedTop;
     private Point _collapsedDragOffset;
     private Point _collapsedMouseDownPoint;
+    private Point _collapsedMouseDownScreenPoint;
+    private Point _collapsedWindowStartPoint;
 
     public MainWindow()
     {
@@ -43,7 +57,6 @@ public partial class MainWindow : Window
 
         _collapseTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(900) };
         _collapseTimer.Tick += CollapseTimer_OnTick;
-
 
         Loaded += OnLoaded;
         MouseLeave += OnWindowMouseLeave;
@@ -116,7 +129,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var mousePosition = PointToScreen(Mouse.GetPosition(this));
+        var mousePosition = GetCursorScreenPosition();
         var bounds = new Rect(Left, Top, ActualWidth, ActualHeight);
         if (!bounds.Contains(mousePosition))
         {
@@ -288,7 +301,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var screenPoint = PointToScreen(Mouse.GetPosition(this));
+        var screenPoint = GetCursorScreenPosition();
         var localPoint = RootGrid.PointFromScreen(screenPoint);
         DragGhostPopup.HorizontalOffset = localPoint.X + 16;
         DragGhostPopup.VerticalOffset = localPoint.Y + 16;
@@ -354,8 +367,10 @@ public partial class MainWindow : Window
         _collapsedPositionLocked = true;
         _collapsedDragMoved = false;
         _collapsedMouseDownPoint = e.GetPosition(this);
-        var screenPoint = PointToScreen(e.GetPosition(this));
-        _collapsedDragOffset = new Point(screenPoint.X - Left, screenPoint.Y - Top);
+        _collapsedMouseDownScreenPoint = GetCursorScreenPosition();
+        _collapsedWindowStartPoint = new Point(Left, Top);
+        _collapsedDragOffset = new Point(_collapsedMouseDownScreenPoint.X - Left, _collapsedMouseDownScreenPoint.Y - Top);
+        AnimateWindowCardScale(0.96);
         CollapsedPanel.CaptureMouse();
         e.Handled = true;
     }
@@ -377,9 +392,11 @@ public partial class MainWindow : Window
 
         _collapsedDragMoved = true;
         var workArea = SystemParameters.WorkArea;
-        var screenPoint = PointToScreen(e.GetPosition(this));
-        _collapsedLeft = Math.Clamp(screenPoint.X - _collapsedDragOffset.X, workArea.Left, workArea.Right - CollapsedWidth);
-        _collapsedTop = Math.Clamp(screenPoint.Y - _collapsedDragOffset.Y, workArea.Top, workArea.Bottom - CollapsedHeight);
+        var screenPoint = GetCursorScreenPosition();
+        var deltaX = screenPoint.X - _collapsedMouseDownScreenPoint.X;
+        var deltaY = screenPoint.Y - _collapsedMouseDownScreenPoint.Y;
+        _collapsedLeft = Math.Clamp(_collapsedWindowStartPoint.X + deltaX, workArea.Left, workArea.Right - CollapsedWidth);
+        _collapsedTop = Math.Clamp(_collapsedWindowStartPoint.Y + deltaY, workArea.Top, workArea.Bottom - CollapsedHeight);
         Left = _collapsedLeft;
         Top = _collapsedTop;
     }
@@ -394,12 +411,26 @@ public partial class MainWindow : Window
         var shouldExpand = !_collapsedDragMoved;
         _isDraggingCollapsed = false;
         CollapsedPanel.ReleaseMouseCapture();
+        AnimateWindowCardScale(1);
         e.Handled = true;
 
         if (shouldExpand)
         {
             ExpandWindow();
         }
+    }
+
+    private static Point GetCursorScreenPosition()
+    {
+        GetCursorPos(out var point);
+        return new Point(point.X, point.Y);
+    }
+
+    private void AnimateWindowCardScale(double scale)
+    {
+        var duration = TimeSpan.FromMilliseconds(120);
+        WindowCardScaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(scale, duration) { EasingFunction = new QuadraticEase() });
+        WindowCardScaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(scale, duration) { EasingFunction = new QuadraticEase() });
     }
 
     private void ResizeThumb_OnDragDelta(object sender, DragDeltaEventArgs e)
